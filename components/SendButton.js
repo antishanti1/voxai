@@ -1,13 +1,19 @@
 import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
 
-export default function SendButton({ onPress, title, inputMessage }) {
-  const handleButtonPress = () => {
+export default function SendButton({
+  handleButtonPress,
+  generateImages,
+  title,
+  inputMessage,
+}) {
+  const onPress = () => {
     console.log(inputMessage);
   };
 
   return (
     <View>
       <TouchableOpacity
+        // onPress={generateImages}
         onPress={handleButtonPress}
         activeOpacity={0.8}
         style={styles.sendButton}

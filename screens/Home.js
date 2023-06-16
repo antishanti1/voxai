@@ -21,7 +21,6 @@ export default function Home() {
       style={{
         flex: 1,
         backgroundColor: "#070A12",
-        // backgroundColor: "#0C101D",
       }}
     >
       <View style={{ position: "relative" }}>

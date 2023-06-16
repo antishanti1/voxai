@@ -12,12 +12,18 @@ import { SvgUri } from "react-native-svg";
 import ChatNav from "../components/ChatNav";
 import SendButton from "../components/SendButton";
 import { HeaderBackButton } from "react-navigation-stack";
+import { OPENAI_API_KEY } from "@env";
+import { GiftedChat } from "react-native-gifted-chat";
 
 export default function Chat() {
   const [text, onChangeText] = React.useState("Hello VoxAI");
   const [number, onChangeNumber] = React.useState("");
-
   const [inputMessage, setInputMessage] = React.useState("");
+  const [outputMessage, setOutputMessage] = React.useState(
+    "Result will be here"
+  );
+
+  const [messages, setMessages] = React.useState([]);
 
   const handleTextInput = (newText) => {
     onChangeText(newText);
@@ -27,6 +33,43 @@ export default function Chat() {
 
   const handleButtonPress = () => {
     console.log("Button pressed");
+    fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        max_tokens: 150,
+      },
+      body: JSON.stringify({
+        messages: [{ role: "system", content: inputMessage }],
+        model: "gpt-3.5-turbo",
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data.choices[0].message.content);
+        setOutputMessage(data.choices[0].message.content.trim());
+      });
+  };
+  const generateImages = () => {
+    console.log("Button pressed");
+    fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        prompt: inputMessage,
+        n: 2,
+        size: "1024x1024",
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data.data[0].url);
+        setOutputMessage(data.data[0].url);
+      });
   };
 
   return (
@@ -44,7 +87,8 @@ export default function Chat() {
           alignItems: "center",
         }}
       >
-        <Text style={{ color: "#fff" }}>Result will be here</Text>
+        <Text style={{ color: "#fff" }}>{outputMessage}</Text>
+        <GiftedChat messages={messages} renderInputToolbar={() => {}} />
       </View>
 
       <View
@@ -70,6 +114,8 @@ export default function Chat() {
             ></SvgUri>
           }
           inputMessage={inputMessage}
+          handleButtonPress={handleButtonPress}
+          generateImages={generateImages}
         />
       </View>
     </SafeAreaView>
