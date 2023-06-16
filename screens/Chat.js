@@ -11,10 +11,24 @@ import BackButton from "../components/BackButton";
 import { SvgUri } from "react-native-svg";
 import ChatNav from "../components/ChatNav";
 import SendButton from "../components/SendButton";
+import { HeaderBackButton } from "react-navigation-stack";
 
 export default function Chat() {
   const [text, onChangeText] = React.useState("Hello VoxAI");
   const [number, onChangeNumber] = React.useState("");
+
+  const [inputMessage, setInputMessage] = React.useState("");
+
+  const handleTextInput = (newText) => {
+    onChangeText(newText);
+    setInputMessage(newText);
+    console.log(text);
+  };
+
+  const handleButtonPress = () => {
+    console.log("Button pressed");
+  };
+
   return (
     <SafeAreaView
       style={{
@@ -26,14 +40,23 @@ export default function Chat() {
 
       <View
         style={{
+          flex: 1,
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ color: "#fff" }}>Result will be here</Text>
+      </View>
+
+      <View
+        style={{
           flexDirection: "row",
           alignContent: "center",
           alignItems: "center",
         }}
       >
         <TextInput
+          onChangeText={handleTextInput}
           style={styles.input}
-          onChangeText={onChangeText}
           value={text}
         />
 
@@ -46,6 +69,7 @@ export default function Chat() {
               uri="https://www.reshot.com/preview-assets/icons/XYEZDVJ8MN/send-up-right-XYEZDVJ8MN.svg"
             ></SvgUri>
           }
+          inputMessage={inputMessage}
         />
       </View>
     </SafeAreaView>
