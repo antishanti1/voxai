@@ -1,24 +1,31 @@
 import { SafeAreaView, Text, View, Image } from "react-native";
 import BackButton from "./BackButton";
 import { SvgUri } from "react-native-svg";
+import { useNavigation } from "@react-navigation/native";
 
 export default function ChatNav() {
+  const navigation = useNavigation();
+
+  const handleButtonPress = () => {
+    navigation.navigate("Home");
+  };
+
   return (
     <SafeAreaView
       style={{
-        flex: 1,
         backgroundColor: "#070A12",
-        marginBottom: 10,
       }}
     >
       <View
         style={{
-          top: 15,
+          paddingTop: 5,
+          paddingBottom: 10,
           flexDirection: "row",
           justifyContent: "space-between",
         }}
       >
         <BackButton
+          onPress={handleButtonPress}
           title={
             <SvgUri
               width="20"
@@ -74,7 +81,6 @@ export default function ChatNav() {
             backgroundColor: "#181B24",
             borderRadius: 100,
             right: 20,
-            top: -4,
           }}
         >
           <Image

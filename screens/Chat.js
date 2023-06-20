@@ -3,11 +3,11 @@ import {
   SafeAreaView,
   Text,
   View,
-  Image,
   TextInput,
   StyleSheet,
   KeyboardAvoidingView,
-  ScrollView,
+  Platform,
+  Keyboard,
 } from "react-native";
 import BackButton from "../components/BackButton";
 import { SvgUri } from "react-native-svg";
@@ -16,6 +16,7 @@ import SendButton from "../components/SendButton";
 import { HeaderBackButton } from "react-navigation-stack";
 import { OPENAI_API_KEY } from "@env";
 import { GiftedChat, Bubble } from "react-native-gifted-chat";
+import * as Speech from "expo-speech";
 
 export default function Chat() {
   const [text, onChangeText] = React.useState("Hello VoxAI");
@@ -44,6 +45,7 @@ export default function Chat() {
 
   const handleButtonPress = () => {
     console.log("Button pressed");
+    Keyboard.dismiss();
     if (
       inputMessage.toLowerCase().startsWith("generate image") ||
       inputMessage.toLowerCase().startsWith("создай фото") ||
@@ -70,7 +72,6 @@ export default function Chat() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-
         Authorization: `Bearer ${OPENAI_API_KEY}`,
         max_tokens: 150,
       },
@@ -82,6 +83,7 @@ export default function Chat() {
       .then((response) => response.json())
       .then((data) => {
         console.log(data.choices[0].message.content);
+        setInputMessage("");
         setOutputMessage(data.choices[0].message.content.trim());
         const message = {
           _id: Math.random().toString(36).substring(7),
@@ -92,9 +94,10 @@ export default function Chat() {
         setMessages((previousMessages) =>
           GiftedChat.append(previousMessages, [message])
         );
+        options = {};
+        Speech.speak(data.choices[0].message.content, options);
       });
     onChangeText("");
-    setInputMessage("");
     setIsInputFocused(false);
   };
 
@@ -113,7 +116,6 @@ export default function Chat() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
@@ -126,6 +128,7 @@ export default function Chat() {
       .then((data) => {
         console.log(data.data[0].url);
         setOutputMessage(data.data[0].url);
+        setInputMessage("");
         data.data.forEach((item) => {
           const message = {
             _id: Math.random().toString(36).substring(7),
@@ -170,10 +173,6 @@ export default function Chat() {
     );
   };
 
-  //   useEffect(() => {
-  //     scrollViewRef.current.scrollToEnd({ animated: true });
-  //   }, [messages]);
-
   return (
     <SafeAreaView
       style={{
@@ -185,15 +184,12 @@ export default function Chat() {
 
       <View
         style={{
-          flex: 10,
-
+          flex: 3,
           justifyContent: "flex-start",
           marginRight: 11,
           marginLeft: -30,
         }}
       >
-        {/* <Text style={{ color: "#fff" }}>{outputMessage}</Text> */}
-
         <GiftedChat
           messages={messages}
           renderInputToolbar={() => {}}
@@ -207,45 +203,45 @@ export default function Chat() {
         />
       </View>
 
-      {/* <KeyboardAvoidingView
+      <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-      > */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignContent: "center",
-          alignItems: "center",
-        }}
       >
-        <TextInput
-          onChangeText={handleTextInput}
-          onFocus={handleInputFocus}
-          style={[
-            styles.input,
-            {
-              color: isInputFocused ? "#fff" : "#a7a7a7",
-            },
-          ]}
-          value={inputMessage}
-          placeholder="Hello VoxAI"
-          placeholderTextColor="#a7a7a7"
-        />
+        <View
+          style={{
+            flexDirection: "row",
+            alignContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <TextInput
+            onChangeText={handleTextInput}
+            onFocus={handleInputFocus}
+            style={[
+              styles.input,
+              {
+                color: "#fff",
+              },
+            ]}
+            value={inputMessage}
+            placeholder="Hello VoxAI"
+            placeholderTextColor="#a7a7a7"
+          />
 
-        <SendButton
-          title={
-            <SvgUri
-              width="40"
-              height="35"
-              fill="#181B24"
-              uri="https://www.reshot.com/preview-assets/icons/XYEZDVJ8MN/send-up-right-XYEZDVJ8MN.svg"
-            ></SvgUri>
-          }
-          inputMessage={inputMessage}
-          handleButtonPress={handleButtonPress}
-          generateImages={generateImages}
-        />
-      </View>
-      {/* </KeyboardAvoidingView> */}
+          <SendButton
+            title={
+              <SvgUri
+                width="40"
+                height="35"
+                fill="#181B24"
+                uri="https://www.reshot.com/preview-assets/icons/XYEZDVJ8MN/send-up-right-XYEZDVJ8MN.svg"
+              ></SvgUri>
+            }
+            inputMessage={inputMessage}
+            handleButtonPress={handleButtonPress}
+            generateImages={generateImages}
+          />
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
