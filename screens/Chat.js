@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
   SafeAreaView,
   Text,
@@ -6,6 +6,8 @@ import {
   Image,
   TextInput,
   StyleSheet,
+  KeyboardAvoidingView,
+  ScrollView,
 } from "react-native";
 import BackButton from "../components/BackButton";
 import { SvgUri } from "react-native-svg";
@@ -13,7 +15,7 @@ import ChatNav from "../components/ChatNav";
 import SendButton from "../components/SendButton";
 import { HeaderBackButton } from "react-navigation-stack";
 import { OPENAI_API_KEY } from "@env";
-import { GiftedChat } from "react-native-gifted-chat";
+import { GiftedChat, Bubble } from "react-native-gifted-chat";
 
 export default function Chat() {
   const [text, onChangeText] = React.useState("Hello VoxAI");
@@ -22,8 +24,9 @@ export default function Chat() {
   const [outputMessage, setOutputMessage] = React.useState(
     "Result will be here"
   );
-
+  const [isInputFocused, setIsInputFocused] = React.useState(false);
   const [messages, setMessages] = React.useState([]);
+  const scrollViewRef = useRef();
 
   const handleTextInput = (newText) => {
     onChangeText(newText);
@@ -31,13 +34,32 @@ export default function Chat() {
     console.log(text);
   };
 
+  const handleInputFocus = () => {
+    onChangeText("");
+  };
+
+  const handleInputBlur = () => {
+    setIsInputFocused(false);
+  };
+
   const handleButtonPress = () => {
     console.log("Button pressed");
+    const message = {
+      _id: Math.random().toString(36).substring(7),
+      text: inputMessage,
+      createdAt: new Date(),
+      user: { _id: 1 },
+    };
+    setMessages((previousMessages) =>
+      GiftedChat.append(previousMessages, [message])
+    );
     fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization:
+          "Bearer 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",
+        // Authorization: `Bearer ${OPENAI_API_KEY}`,
         max_tokens: 150,
       },
       body: JSON.stringify({
@@ -49,7 +71,19 @@ export default function Chat() {
       .then((data) => {
         console.log(data.choices[0].message.content);
         setOutputMessage(data.choices[0].message.content.trim());
+        const message = {
+          _id: Math.random().toString(36).substring(7),
+          text: data.choices[0].message.content.trim(),
+          createdAt: new Date(),
+          user: { _id: 2 },
+        };
+        setMessages((previousMessages) =>
+          GiftedChat.append(previousMessages, [message])
+        );
       });
+    onChangeText("");
+    setInputMessage("");
+    setIsInputFocused(false);
   };
   const generateImages = () => {
     console.log("Button pressed");
@@ -57,7 +91,9 @@ export default function Chat() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization:
+          "Bearer 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",
+        // Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
         prompt: inputMessage,
@@ -72,6 +108,36 @@ export default function Chat() {
       });
   };
 
+  const renderBubble = (props) => {
+    return (
+      <Bubble
+        {...props}
+        wrapperStyle={{
+          right: {
+            backgroundColor: "#D6FFFF",
+          },
+          left: {
+            backgroundColor: "#181B24",
+          },
+        }}
+        textStyle={{
+          right: {
+            color: "#181B24",
+            paddingTop: 4,
+          },
+          left: {
+            color: "#fff",
+            paddingTop: 4,
+          },
+        }}
+      />
+    );
+  };
+
+  //   useEffect(() => {
+  //     scrollViewRef.current.scrollToEnd({ animated: true });
+  //   }, [messages]);
+
   return (
     <SafeAreaView
       style={{
@@ -83,14 +149,32 @@ export default function Chat() {
 
       <View
         style={{
-          flex: 1,
-          alignItems: "center",
+          flex: 10,
+
+          justifyContent: "flex-start",
+          marginRight: 11,
+          marginLeft: -30,
         }}
       >
-        <Text style={{ color: "#fff" }}>{outputMessage}</Text>
-        <GiftedChat messages={messages} renderInputToolbar={() => {}} />
+        {/* <Text style={{ color: "#fff" }}>{outputMessage}</Text> */}
+        <ScrollView ref={scrollViewRef}>
+          <GiftedChat
+            messages={messages}
+            renderInputToolbar={() => {}}
+            user={{ _id: 1 }}
+            minInputToolbarHeight={0}
+            renderBubble={renderBubble}
+            timeTextStyle={{
+              left: {},
+              right: { color: "#181B24" },
+            }}
+          />
+        </ScrollView>
       </View>
 
+      {/* <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      > */}
       <View
         style={{
           flexDirection: "row",
@@ -100,8 +184,16 @@ export default function Chat() {
       >
         <TextInput
           onChangeText={handleTextInput}
-          style={styles.input}
-          value={text}
+          onFocus={handleInputFocus}
+          style={[
+            styles.input,
+            {
+              color: isInputFocused ? "#fff" : "#a7a7a7",
+            },
+          ]}
+          value={inputMessage}
+          placeholder="Hello VoxAI"
+          placeholderTextColor="#a7a7a7"
         />
 
         <SendButton
@@ -118,6 +210,7 @@ export default function Chat() {
           generateImages={generateImages}
         />
       </View>
+      {/* </KeyboardAvoidingView> */}
     </SafeAreaView>
   );
 }

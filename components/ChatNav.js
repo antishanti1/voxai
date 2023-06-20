@@ -8,7 +8,7 @@ export default function ChatNav() {
       style={{
         flex: 1,
         backgroundColor: "#070A12",
-        height: "20%",
+        marginBottom: 10,
       }}
     >
       <View
