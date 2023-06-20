@@ -57,9 +57,8 @@ export default function Chat() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization:
-          "Bearer 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",
-        // Authorization: `Bearer ${OPENAI_API_KEY}`,
+
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         max_tokens: 150,
       },
       body: JSON.stringify({
@@ -91,8 +90,7 @@ export default function Chat() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization:
-          "Bearer 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",
+
         // Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
