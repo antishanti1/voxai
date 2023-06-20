@@ -44,6 +44,19 @@ export default function Chat() {
 
   const handleButtonPress = () => {
     console.log("Button pressed");
+    if (
+      inputMessage.toLowerCase().startsWith("generate image") ||
+      inputMessage.toLowerCase().startsWith("создай фото") ||
+      inputMessage.toLowerCase().startsWith("cтвори фото")
+    ) {
+      generateImages();
+    } else {
+      generateText();
+    }
+  };
+
+  const generateText = () => {
+    console.log("Button pressed");
     const message = {
       _id: Math.random().toString(36).substring(7),
       text: inputMessage,
@@ -84,14 +97,24 @@ export default function Chat() {
     setInputMessage("");
     setIsInputFocused(false);
   };
+
   const generateImages = () => {
     console.log("Button pressed");
+    const message = {
+      _id: Math.random().toString(36).substring(7),
+      text: inputMessage,
+      createdAt: new Date(),
+      user: { _id: 1 },
+    };
+    setMessages((previousMessages) =>
+      GiftedChat.append(previousMessages, [message])
+    );
     fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
 
-        // Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
         prompt: inputMessage,
@@ -103,7 +126,22 @@ export default function Chat() {
       .then((data) => {
         console.log(data.data[0].url);
         setOutputMessage(data.data[0].url);
+        data.data.forEach((item) => {
+          const message = {
+            _id: Math.random().toString(36).substring(7),
+            text: "Image generated",
+            createdAt: new Date(),
+            user: { _id: 2 },
+            image: item.url,
+          };
+          setMessages((previousMessages) =>
+            GiftedChat.append(previousMessages, [message])
+          );
+        });
       });
+    onChangeText("");
+    setInputMessage("");
+    setIsInputFocused(false);
   };
 
   const renderBubble = (props) => {
@@ -155,19 +193,18 @@ export default function Chat() {
         }}
       >
         {/* <Text style={{ color: "#fff" }}>{outputMessage}</Text> */}
-        <ScrollView ref={scrollViewRef}>
-          <GiftedChat
-            messages={messages}
-            renderInputToolbar={() => {}}
-            user={{ _id: 1 }}
-            minInputToolbarHeight={0}
-            renderBubble={renderBubble}
-            timeTextStyle={{
-              left: {},
-              right: { color: "#181B24" },
-            }}
-          />
-        </ScrollView>
+
+        <GiftedChat
+          messages={messages}
+          renderInputToolbar={() => {}}
+          user={{ _id: 1 }}
+          minInputToolbarHeight={0}
+          renderBubble={renderBubble}
+          timeTextStyle={{
+            left: {},
+            right: { color: "#181B24" },
+          }}
+        />
       </View>
 
       {/* <KeyboardAvoidingView
